@@ -29,7 +29,7 @@ abstract class Room {
 class SingleRoom extends Room {
 
     public SingleRoom() {
-        super(1, 200, 1500);
+        super(1, 200,  1500);
     }
 
     @Override
