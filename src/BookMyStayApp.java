@@ -1,23 +1,22 @@
-// Version 2.1 - Refactored Implementation
+// Version 4.1 - Refactored Implementation
 
-// Abstract Class
+import java.util.*;
+
+// Abstract Room Class
 abstract class Room {
     protected int beds;
     protected int size;
     protected double price;
 
-    // Constructor
     public Room(int beds, int size, double price) {
         this.beds = beds;
         this.size = size;
         this.price = price;
     }
 
-    // Abstract method
     public abstract String getRoomType();
 
-    // Common method
-    public void displayRoomDetails() {
+    public void displayDetails() {
         System.out.println("Room Type: " + getRoomType());
         System.out.println("Beds: " + beds);
         System.out.println("Size: " + size + " sq.ft");
@@ -25,75 +24,117 @@ abstract class Room {
     }
 }
 
-// Single Room Class
+// Concrete Room Classes
 class SingleRoom extends Room {
-
     public SingleRoom() {
         super(1, 200,  1500);
     }
 
-    @Override
     public String getRoomType() {
         return "Single Room";
     }
 }
 
-// Double Room Class
 class DoubleRoom extends Room {
-
     public DoubleRoom() {
         super(2, 350, 2500);
     }
 
-    @Override
     public String getRoomType() {
         return "Double Room";
     }
 }
 
-// Suite Room Class
 class SuiteRoom extends Room {
-
     public SuiteRoom() {
         super(3, 500, 5000);
     }
 
-    @Override
     public String getRoomType() {
         return "Suite Room";
     }
 }
 
+// Centralized Inventory (Read-Only Usage Here)
+class RoomInventory {
+    private Map<String, Integer> inventory;
+
+    public RoomInventory() {
+        inventory = new HashMap<>();
+        inventory.put("Single Room", 5);
+        inventory.put("Double Room", 3);
+        inventory.put("Suite Room", 0); // Example: unavailable
+    }
+
+    public int getAvailability(String roomType) {
+        return inventory.getOrDefault(roomType, 0);
+    }
+
+    public Set<String> getAllRoomTypes() {
+        return inventory.keySet();
+    }
+}
+
+// Search Service (Read-Only)
+class RoomSearchService {
+
+    private RoomInventory inventory;
+
+    public RoomSearchService(RoomInventory inventory) {
+        this.inventory = inventory;
+    }
+
+    public void searchAvailableRooms() {
+
+        System.out.println("===== AVAILABLE ROOMS =====\n");
+
+        for (String type : inventory.getAllRoomTypes()) {
+
+            int available = inventory.getAvailability(type);
+
+            // Validation → show only available rooms
+            if (available > 0) {
+
+                Room room = createRoom(type);
+
+                if (room != null) {
+                    room.displayDetails();
+                    System.out.println("Available: " + available);
+                    System.out.println("-----------------------------------");
+                }
+            }
+        }
+    }
+
+    // Factory Method (maps type → object)
+    private Room createRoom(String type) {
+        switch (type) {
+            case "Single Room":
+                return new SingleRoom();
+            case "Double Room":
+                return new DoubleRoom();
+            case "Suite Room":
+                return new SuiteRoom();
+            default:
+                return null;
+        }
+    }
+}
+
 // Main Class
-public class BookMyStayApp {
+public class UseCase4RoomSearch {
 
     public static void main(String[] args) {
 
-        // Creating Room Objects (Polymorphism)
-        Room single = new SingleRoom();
-        Room doubleRoom = new DoubleRoom();
-        Room suite = new SuiteRoom();
+        // Initialize Inventory
+        RoomInventory inventory = new RoomInventory();
 
-        // Static Availability Variables
-        int singleAvailable = 5;
-        int doubleAvailable = 3;
-        int suiteAvailable = 2;
+        // Initialize Search Service
+        RoomSearchService searchService = new RoomSearchService(inventory);
 
-        // Display Details
-        System.out.println("===== HOTEL ROOM AVAILABILITY =====\n");
+        // Guest performs search
+        searchService.searchAvailableRooms();
 
-        single.displayRoomDetails();
-        System.out.println("Available: " + singleAvailable);
-        System.out.println("-----------------------------------");
-
-        doubleRoom.displayRoomDetails();
-        System.out.println("Available: " + doubleAvailable);
-        System.out.println("-----------------------------------");
-
-        suite.displayRoomDetails();
-        System.out.println("Available: " + suiteAvailable);
-        System.out.println("-----------------------------------");
-
-        System.out.println("\nApplication Terminated.");
+        System.out.println("\nSearch Completed. No changes made to inventory.");
     }
 }
